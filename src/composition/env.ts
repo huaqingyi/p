@@ -2,7 +2,7 @@ import { PCore } from '../core';
 import { config } from 'dotenv';
 import { join } from 'path';
 import { existsSync, mkdirpSync, writeFileSync } from 'fs-extra';
-import { isBoolean, isNaN, map } from 'lodash';
+import { isNaN, map } from 'lodash';
 
 export interface UserDotENV {
     [x: string]: any;
@@ -88,7 +88,11 @@ export class DotENV extends PCore {
     }
 }
 
+export function env(): UserDotENV;
+export function env<T>(prototypeKey?: UserDotENVKey): T;
 export function env() {
     const dotenv = new DotENV();
-
+    const [prototypeKey] = arguments;
+    if (prototypeKey) return dotenv[prototypeKey];
+    return dotenv;
 }

@@ -1,6 +1,6 @@
-import { Controller, PController } from '../../src';
+import { TController, TCP } from '../../src';
 
-@Controller()
-export default class extends PController {
-
+@TCP
+export default class extends TController {
+    
 }

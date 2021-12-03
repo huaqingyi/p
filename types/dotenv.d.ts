@@ -8,4 +8,4 @@ declare interface UserDotENV {
 	DATABASE_USER: string;
 	DATABASE_PASSWORD: number;
 }
-export type UserDotENVKey = 'RUNTIME' | 'TYPES' | 'APP_PATH' | 'HOST' | 'PORT' | 'DATABASE_HOST' | 'DATABASE_USER' | 'DATABASE_PASSWORD'
+export type UserDotENVKey = 'RUNTIME' | 'TYPES' | 'APP_PATH' | 'HOST' | 'PORT' | 'DATABASE_HOST' | 'DATABASE_USER' | 'DATABASE_PASSWORD';
