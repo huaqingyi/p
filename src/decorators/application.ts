@@ -61,6 +61,8 @@ export async function bootstrap<P extends PYIApplcation>(target: PYIClass<P> & T
     const apath = config.APP_PATH;
     const loaded = new Loaded(apath);
     await loaded.mounting();
+    // pyi.use(pyi.router.routes()).use(pyi.router.allowedMethods());
+    // pyi.listen(3000);
 }
 
 export function PYIBootstrap<P extends PYIApplcation>(target: PYIClass<P> & ThisType<P>) {

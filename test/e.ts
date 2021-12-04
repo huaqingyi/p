@@ -21,36 +21,50 @@
 //     });
 //     if (i === 10000 - 1) app.use(router.routes()).listen(3000);
 // });
-import { watch } from 'chokidar';
-import { readFileSync } from 'fs';
-import { statSync, existsSync } from 'fs-extra';
-import { find } from 'lodash';
-import { extname, join } from 'path';
+// import { watch } from 'chokidar';
+// import { readFileSync } from 'fs';
+// import { statSync, existsSync } from 'fs-extra';
+// import { find } from 'lodash';
+// import { extname, join } from 'path';
 
-export async function filepath(dirname: string, ext: RegExp = /^.(ts|tsx|js|jsx|mjs)$/) {
-    const watcher = watch(dirname, {
-        ignored(path: string) {
-            const gitignore = join(dirname, '.gitignore');
-            if (existsSync(gitignore)) {
-                const ignore = readFileSync(gitignore).toString().split('\n');
-                const cg = find(ignore, g => (new RegExp(g, 'gi')).test(path));
-                if (cg) return true;
-            }
-            if (statSync(path).isDirectory()) return false;
-            const filename = extname(path);
-            if (filename) return !ext.test(filename);
-            return true;
-        },
-    });
-    const p: string[] = [];
-    return await new Promise(r => {
-        watcher.on('add', path => p.push(path));
-        watcher.on('ready', async () => {
-            await watcher.close();
-            r(p);
-            console.log(p);
-        });
-    });
-}
+// export async function filepath(dirname: string, ext: RegExp = /^.(ts|tsx|js|jsx|mjs)$/) {
+//     const watcher = watch(dirname, {
+//         ignored(path: string) {
+//             const gitignore = join(dirname, '.gitignore');
+//             if (existsSync(gitignore)) {
+//                 const ignore = readFileSync(gitignore).toString().split('\n');
+//                 const cg = find(ignore, g => (new RegExp(g, 'gi')).test(path));
+//                 if (cg) return true;
+//             }
+//             if (statSync(path).isDirectory()) return false;
+//             const filename = extname(path);
+//             if (filename) return !ext.test(filename);
+//             return true;
+//         },
+//     });
+//     const p: string[] = [];
+//     return await new Promise(r => {
+//         watcher.on('add', path => p.push(path));
+//         watcher.on('ready', async () => {
+//             await watcher.close();
+//             r(p);
+//             console.log(p);
+//         });
+//     });
+// }
 
-filepath(process.cwd());
+// filepath(process.cwd());
+
+import Koa from 'koa';
+import Router from 'koa-router';
+
+const app = new Koa();
+const router = new Router();
+router.register('/test', ['GET', 'COPY'], ctx => {
+    ctx.body = { name: 111 }
+});
+const root = new Router({
+    prefix: '/test',
+});
+root.use(router.routes());
+app.use(root.routes()).use(root.allowedMethods()).listen(3000);

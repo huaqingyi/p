@@ -103,14 +103,9 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": [
-    "http/**/*.ts",
-    "app/**/*.ts",
-    "component/**/*.ts",
-    "configuration/**/*.ts",
-    "middleware/**/*.ts",
-    "service/**/*.ts",
+    "src/**/*.ts",
     "test/**/*.ts",
-    "types/**/*.d.ts",
+    "example/**/*.ts",
     "app.ts"
   ]
 }

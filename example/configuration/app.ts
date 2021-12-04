@@ -1,4 +1,4 @@
-import { Configuration, PYIConfiguration, property } from '../src';
+import { Configuration, PYIConfiguration, properties } from '../../src';
 
 @Configuration
 export class AppConfiguration extends PYIConfiguration {

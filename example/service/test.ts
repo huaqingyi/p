@@ -1,4 +1,4 @@
-import { PService, Service } from '../src';
+import { PService, Service } from '../../src';
 
 @Service
 export class TestService extends PService {

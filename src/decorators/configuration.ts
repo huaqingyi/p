@@ -1,5 +1,5 @@
 import { env } from '../composition/env';
-import { UserDotENV, UserDotENVKey } from '../../types/dotenv';
+import { UserDotENV, UserDotENVKey } from '../../example/types/dotenv';
 import { PCore } from '../core/pcore';
 import { PYIClass } from '../core/types';
 import { join } from 'path';
@@ -14,7 +14,7 @@ export function Configuration<P extends PConfiguration>(target: PYIClass<P> & Th
     return target;
 }
 
-export function property<P extends PConfiguration>(target: P, key: string): void;
+export function properties<P extends PConfiguration>(target: P, key: string): void;
 export function properties(prototypeKey?: UserDotENVKey): <P extends PConfiguration>(target: P, key: string) => void;
 export function properties(callback: (config: UserDotENV) => any): <P extends PConfiguration>(target: P, key: string) => void;
 export function properties() {

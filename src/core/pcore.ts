@@ -8,8 +8,9 @@ export interface IPlugin {
     mounting(): any;
 }
 
+export const FILEPATH = Symbol('#FILEPATH');
+
 export abstract class PCore implements PYICore {
-    public static _filepath: string;
 
     public static _core() {
         return PCore;
