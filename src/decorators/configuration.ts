@@ -1,5 +1,5 @@
 import { env } from '../composition/env';
-import { UserDotENV, UserDotENVKey } from '../../example/types/dotenv';
+import { UserDotENV, UserDotENVKey } from '../composition/env';
 import { PCore } from '../core/pcore';
 import { PYIClass } from '../core/types';
 import { isFunction } from 'lodash';

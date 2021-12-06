@@ -16,8 +16,13 @@ export const AutowiredProperties = Symbol('#AUTOWIREDPROPERTIES');
 export const AutowiredConfigurationProperties = Symbol('#AUTOWIREDCONFIGURAITONPROPERTIES');
 export function autowiredProperties<P extends PComponent>(target: P & any, key: string, config?: object) {
     const Component = Reflect.getMetadata('design:type', target, key);
-    const proxy = new Proxy(new Component(config), {
-        get: (t, k) => t[k],
+    let component: any;
+    const proxy = new Proxy({}, {
+        get: (t: any, k) => {
+            if (t[k]) return t[k];
+            if (!component) component = new Component(config);
+            return component[k];
+        },
         set: (t, k, v) => {
             t[k] = v;
             return true;
@@ -32,8 +37,10 @@ export function autowired() {
     if (arguments.length === 1) {
         const [config] = arguments;
         return function <P extends PComponent>(target: P & any, key: string) {
-            autowiredProperties(target, key, config);
+            // autowiredProperties(target, key, config);
+            target[key] = '111';
         }
     }
-    autowiredProperties(arguments[0], arguments[1]);
+    // autowiredProperties(arguments[0], arguments[1]);
+    arguments[0][arguments[1]] = '111';
 }

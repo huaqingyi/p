@@ -8,10 +8,11 @@ export interface UserDotENV {
     [x: string]: any;
 }
 
-export type UserDotENVKey = 'RUNTIME' | 'TYPES' | 'APP_PATH';
+export type UserDotENVKey = 'RUNTIME' | 'TYPES' | 'APP_PATH' | any;
 
 export class DotENV extends PCore {
     [x: string]: any;
+    public static $self: DotENV;
     public static _root() {
         return DotENV;
     }
@@ -44,7 +45,7 @@ export class DotENV extends PCore {
 
     constructor() {
         super();
-        if (DotENV._config) return this;
+        if (DotENV.$self) return DotENV.$self;
         this.RUNTIME = join(process.cwd(), 'runtime');
         this.TYPES = join(process.cwd(), 'types');
         if (!existsSync(this.RUNTIME)) mkdirpSync(this.RUNTIME);
@@ -57,6 +58,11 @@ export class DotENV extends PCore {
         if (!existsSync(path)) throw new Error(`No environment configured ...`);
         const _config: any = config({ path }).parsed || {};
         DotENV._config = _config;
+        DotENV.$self = this.proxy(DotENV._config);
+        return DotENV.$self;
+    }
+
+    public proxy(_config: any) {
         const c = new Proxy(this, {
             get: (target: any, key) => target[key] || target.config[key],
             set: (target, key, value) => {
