@@ -1,17 +1,20 @@
 import { Context } from 'koa';
 import { isRegExp, isString } from 'lodash';
 import { PCore } from '../../core/pcore';
-import { PYIClass } from '../../core/types';
 
 export const ControllerProperties = Symbol('#CONTROLLERPROPERTIES');
 export const ControllerPrefixProperties = Symbol('#CONTROLLERPREFIXPROPERTIES');
 
-export function Controller<P extends PController>(target: any): void;
-export function Controller(...prefix: Array<string | RegExp>): <P extends PController>(target: PYIClass<P>) => void;
+export type PYIControllass<V> = {
+    new(props: Context): V & PController;
+} & typeof PController;
+
+export function Controller<P extends PController>(target: PYIControllass<P>): void;
+export function Controller(...prefix: Array<string | RegExp>): <P extends PController>(target: PYIControllass<P>) => void;
 export function Controller() {
     if (isString(arguments[0]) || isRegExp(arguments[0])) {
         const paths = [...arguments];
-        return function <P extends PController>(target: PYIClass<P>) {
+        return function <P extends PController>(target: PYIControllass<P>) {
             Reflect.defineMetadata(ControllerPrefixProperties, paths, target);
         }
     }
@@ -42,7 +45,7 @@ export class PController extends PCore {
     }
 
     constructor(public context: Context) {
-        super(context);
+        super();
     }
 }
 

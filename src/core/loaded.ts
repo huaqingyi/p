@@ -5,7 +5,8 @@ import { IPlugin, PCore, FILEPATH } from './pcore';
 import Router from 'koa-router';
 import { PYIClass } from './types';
 import { PController, ControllerPrefixProperties, ControllerProperties } from '../decorators/controller/controller';
-import { basename, extname, dirname } from 'path';
+import { basename, extname } from 'path';
+import { AutowiredConfigurationProperties, AutowiredProperties } from '../decorators/component';
 
 export class Loaded extends PCore implements IPlugin {
     public static _root() {
@@ -31,7 +32,7 @@ export class Loaded extends PCore implements IPlugin {
         else return [`/${cname}/${fname}`];
     }
 
-    public roouter<P extends PController>(target: PYIClass<P>) {
+    public roouter<P extends PController>(target: PYIClass<P> & any) {
         const prefixs = this.prefix(target);
         const routes = map(prefixs, prefix => new Router({ prefix }));
         const actions = Reflect.getMetadata(ControllerProperties, target.prototype);
@@ -46,7 +47,7 @@ export class Loaded extends PCore implements IPlugin {
                         return next().then(() => config.value.apply(control, [ctx, next]));
                     }));
                 }
-                return map(routes, route => route.use(p, (ctx, next) => {
+                return map(routes, route => route.all(p, (ctx, next) => {
                     const control = new target(ctx);
                     return next().then(() => config.value.apply(control, [ctx, next]));
                 }));
@@ -56,20 +57,36 @@ export class Loaded extends PCore implements IPlugin {
         return target;
     }
 
-    public async mounting() {
+    // public async injector<P extends PCore>(target: PYIClass<P> & any, app: Application) {
+    //     const injs = Reflect.getMetadata(AutowiredProperties, target.prototype);
+    //     if (!injs) return injs;
+    //     map(injs, inj => {
+    //         const Component = Reflect.getMetadata('design:type', target.prototype, inj);
+    //         const config = Reflect.getMetadata(AutowiredConfigurationProperties, target.prototype, inj);
+    //         target.prototype[inj] = config ? new Component(config) : new Component();
+    //         console.log(target.prototype);
+    //     });
+    //     // const Component = Reflect.getMetadata('design:type', arguments[0], arguments[1]);
+    //     // const component = new Component();
+    //     // console.log(111, component);
+    //     // Object.defineProperty(arguments[0], arguments[1], {
+    //     //     get: () => component, enumerable: true, configurable: true,
+    //     // });
+    // }
+
+    public async mounting(app: Application) {
         const paths = await filepath(this.apath);
 
         return await Promise.all(map(paths, async path => {
             const comps = await import(path);
-            map(comps, (comp, f) => {
+            await Promise.all(map(comps, async (comp, f) => {
                 const _core = comp._core && isFunction(comp._core) ? comp._core : false;
                 if (_core === false) return comp;
-                if ([Application, PCore].indexOf(_core()) !== -1) {
-                    Reflect.defineMetadata(FILEPATH, path, comp);
-                }
-                if (PController === comp._root()) this.roouter(comp);
+                // await this.injector(comp, app);
+                if ([Application, PCore].indexOf(_core()) !== -1) Reflect.defineMetadata(FILEPATH, path, comp);
+                if (comp._root && PController === comp._root()) this.roouter(comp);
                 return comp;
-            });
+            }));
             return comps;
         }));
     }

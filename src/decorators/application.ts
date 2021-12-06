@@ -4,6 +4,9 @@ import { PCore } from '../core/pcore';
 import { PYIClass } from '../core/types';
 import { Loaded } from '../core/loaded';
 import Router from 'koa-router';
+import { join } from 'path';
+import { Server, connect } from 'net';
+import { existsSync, removeSync } from 'fs-extra';
 
 export class Application extends Koa {
     public static pyi: Application;
@@ -60,9 +63,22 @@ export async function bootstrap<P extends PYIApplcation>(target: PYIClass<P> & T
     const config = env();
     const apath = config.APP_PATH;
     const loaded = new Loaded(apath);
-    await loaded.mounting();
-    // pyi.use(pyi.router.routes()).use(pyi.router.allowedMethods());
-    // pyi.listen(3000);
+    await loaded.mounting(pyi);
+    pyi.use(pyi.router.routes()).use(pyi.router.allowedMethods());
+    const ipc = join(config.RUNTIME, config.IPC);
+    if (existsSync(ipc)) removeSync(ipc);
+    pyi.listen(ipc);
+    const app = new Server(socket => {
+        socket.on('data', data => {
+            // const blen = data.slice(0, 4).readInt32BE();
+            // console.log(blen, data.slice(4, 4 + blen).toString());
+            const net = connect(ipc);
+            net.write(data);
+            net.on('data', socket.write.bind(socket));
+            net.on('end', socket.end.bind(socket));
+        });
+    });
+    app.listen(config.PORT);
 }
 
 export function PYIBootstrap<P extends PYIApplcation>(target: PYIClass<P> & ThisType<P>) {

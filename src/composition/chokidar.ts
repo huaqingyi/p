@@ -2,7 +2,7 @@ import { watch } from 'chokidar';
 import { readFileSync } from 'fs';
 import { statSync, existsSync } from 'fs-extra';
 import { find } from 'lodash';
-import { basename, join } from 'path';
+import { join, extname } from 'path';
 
 export async function filepath(dirname: string, ext: RegExp = /^.(ts|tsx|js|jsx|mjs)$/): Promise<string[]> {
     const watcher = watch(dirname, {
@@ -14,7 +14,8 @@ export async function filepath(dirname: string, ext: RegExp = /^.(ts|tsx|js|jsx|
                 if (cg) return true;
             }
             if (statSync(path).isDirectory()) return false;
-            const filename = `.${basename(path).split('.').slice(1).join('.')}`;
+            if (/\.d\.ts$/.test(path)) return true;
+            const filename = extname(path);
             if (filename) return !ext.test(filename);
             return true;
         },

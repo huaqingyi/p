@@ -55,16 +55,55 @@
 
 // filepath(process.cwd());
 
-import Koa from 'koa';
-import Router from 'koa-router';
+// import Koa from 'koa';
+// import Router from 'koa-router';
 
-const app = new Koa();
-const router = new Router();
-router.register('/test', ['GET', 'COPY'], ctx => {
-    ctx.body = { name: 111 }
-});
-const root = new Router({
-    prefix: '/test',
-});
-root.use(router.routes());
-app.use(root.routes()).use(root.allowedMethods()).listen(3000);
+// const app = new Koa();
+// const router = new Router({
+//     prefix: '/test',
+// });
+// router.register('/test', ['GET', 'COPY'], ctx => {
+//     ctx.body = { name: 111 }
+// });
+// router.all('/test1', ctx => {
+//     ctx.body = { name: 222 }
+// })
+// const root = new Router();
+// root.use(router.routes());
+// app.use(root.routes()).use(root.allowedMethods()).listen(3000);
+
+type Ctor<T> = new (...args: any[]) => T
+
+class Name {
+    constructor() { }
+    consoleMsg() {
+        console.log(22222)
+    }
+}
+
+function auto<T>(className: Ctor<T>) {
+    return function (target: any, attr: any) {
+　　　　　　// target 是类的原型对象, attr 属性的名称 (url)
+        console.log(target);
+        console.log(attr);
+        console.log(className)
+        target[attr] = new className();
+    }
+}
+class Greeter {
+    property = "property";
+    hello: string;
+
+    @auto(Name)
+    newProperty!: Name
+
+    constructor(hello: string) {
+        this.hello = hello
+    }
+
+    getMsg() {
+        console.log(123, this.newProperty)
+        // this.newProperty.consoleMsg()
+    }
+}
+new Greeter('你好').getMsg();

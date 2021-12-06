@@ -2,7 +2,6 @@ import { env } from '../composition/env';
 import { UserDotENV, UserDotENVKey } from '../../example/types/dotenv';
 import { PCore } from '../core/pcore';
 import { PYIClass } from '../core/types';
-import { join } from 'path';
 import { isFunction } from 'lodash';
 
 export interface PYIAppConfiguration {
@@ -19,14 +18,14 @@ export function properties(prototypeKey?: UserDotENVKey): <P extends PConfigurat
 export function properties(callback: (config: UserDotENV) => any): <P extends PConfiguration>(target: P, key: string) => void;
 export function properties() {
     if (arguments.length === 1) {
-        return (target: PConfiguration, key: string) => {
+        return (target: PConfiguration & any, key: string) => {
             if (isFunction(arguments[0])) {
                 const e = arguments[0](env());
-                if (e.then && isFunction(e.then)) e.then((v: any) => (target as any)[key] = v);
-                else (target as any)[key] = e;
+                if (e.then && isFunction(e.then)) e.then((v: any) => target[key] = v);
+                else target[key] = e;
             } else {
                 const config = env(arguments[0]);
-                (target as any)[key] = config;
+                target[key] = config;
             }
         }
     }
@@ -35,17 +34,11 @@ export function properties() {
     target[key] = config;
 }
 
-export class PConfiguration extends PCore {
-
+export function resource<P extends PCore>(target: P & any, key: string) {
+    const Configuration = Reflect.getMetadata('design:type', target, key);
+    target[key] = new Configuration();
 }
 
-export class PYIConfiguration extends PCore {
+export class PConfiguration extends PCore {
 
-    constructor() {
-        super();
-        const that: any = this;
-        if (!that.port) that.port = 8080;
-        if (!that.host) that.host = '127.0.0.1';
-        if (!that.ipc) that.ipc = join(env('RUNTIME'), '.ipc.scok');
-    }
 }
