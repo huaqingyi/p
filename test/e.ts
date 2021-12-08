@@ -83,7 +83,7 @@ class Name {
 
 function auto<T>(className: Ctor<T>) {
     return function (target: any, attr: any) {
-　　　　　　// target 是类的原型对象, attr 属性的名称 (url)
+        // target 是类的原型对象, attr 属性的名称 (url)
         console.log(target);
         console.log(attr);
         console.log(className)

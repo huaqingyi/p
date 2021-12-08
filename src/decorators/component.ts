@@ -12,35 +12,19 @@ export class PComponent extends PCore {
 
 }
 
-export const AutowiredProperties = Symbol('#AUTOWIREDPROPERTIES');
-export const AutowiredConfigurationProperties = Symbol('#AUTOWIREDCONFIGURAITONPROPERTIES');
-export function autowiredProperties<P extends PComponent>(target: P & any, key: string, config?: object) {
-    const Component = Reflect.getMetadata('design:type', target, key);
-    let component: any;
-    const proxy = new Proxy({}, {
-        get: (t: any, k) => {
-            if (t[k]) return t[k];
-            if (!component) component = new Component(config);
-            return component[k];
-        },
-        set: (t, k, v) => {
-            t[k] = v;
-            return true;
-        },
-    });
-    target[key] = proxy;
-}
-
 export function autowired<T = any>(config: T): <P extends PComponent>(target: P, key: string) => void;
 export function autowired<P extends PComponent>(target: P, key: string): void;
 export function autowired() {
     if (arguments.length === 1) {
         const [config] = arguments;
         return function <P extends PComponent>(target: P & any, key: string) {
-            // autowiredProperties(target, key, config);
-            target[key] = '111';
+            const Component = Reflect.getMetadata('design:type', target, key);
+            target[key] = new Component(config);
+            return target[key];
         }
     }
-    // autowiredProperties(arguments[0], arguments[1]);
-    arguments[0][arguments[1]] = '111';
+    const [target, key] = arguments;
+    const Component = Reflect.getMetadata('design:type', target, key);
+    target[key] = new Component();
+    return target[key];
 }

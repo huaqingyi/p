@@ -6,7 +6,6 @@ import Router from 'koa-router';
 import { PYIClass } from './types';
 import { PController, ControllerPrefixProperties, ControllerProperties } from '../decorators/controller/controller';
 import { basename, extname } from 'path';
-import { AutowiredConfigurationProperties, AutowiredProperties } from '../decorators/component';
 
 export class Loaded extends PCore implements IPlugin {
     public static _root() {
