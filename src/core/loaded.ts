@@ -31,6 +31,18 @@ export class Loaded extends PCore implements IPlugin {
         else return [`/${cname}/${fname}`];
     }
 
+    public use(target: (new (...props: any[]) => any), action: Function, ctx: any, next: () => Promise<any>) {
+        const control = new target(ctx);
+        return next().then(async () => {
+            const body = JSON.stringify(ctx.body);
+            const resp = await action.apply(control, [ctx, next]);
+            if (resp && JSON.stringify(ctx.body) === body) {
+                ctx.body = resp;
+            }
+            return ctx;
+        });
+    }
+
     public roouter<P extends PController>(target: PYIClass<P> & any) {
         const prefixs = this.prefix(target);
         const routes = map(prefixs, prefix => new Router({ prefix }));
@@ -41,37 +53,14 @@ export class Loaded extends PCore implements IPlugin {
             return map(config.path, p => {
                 p = p.slice(0, 1) === '/' ? p : `/${p}`;
                 if (config.methods && config.methods !== 0) {
-                    return map(routes, route => route.register(p, config.methods, (ctx, next) => {
-                        const control = new target(ctx);
-                        return next().then(() => config.value.apply(control, [ctx, next]));
-                    }));
+                    return map(routes, route => route.register(p, config.methods, this.use.bind(this, target, config.value)));
                 }
-                return map(routes, route => route.all(p, (ctx, next) => {
-                    const control = new target(ctx);
-                    return next().then(() => config.value.apply(control, [ctx, next]));
-                }));
+                return map(routes, route => route.all(p, this.use.bind(this, target, config.value)));
             });
         });
         map(routes, route => this.app.router.use(route.routes()));
         return target;
     }
-
-    // public async injector<P extends PCore>(target: PYIClass<P> & any, app: Application) {
-    //     const injs = Reflect.getMetadata(AutowiredProperties, target.prototype);
-    //     if (!injs) return injs;
-    //     map(injs, inj => {
-    //         const Component = Reflect.getMetadata('design:type', target.prototype, inj);
-    //         const config = Reflect.getMetadata(AutowiredConfigurationProperties, target.prototype, inj);
-    //         target.prototype[inj] = config ? new Component(config) : new Component();
-    //         console.log(target.prototype);
-    //     });
-    //     // const Component = Reflect.getMetadata('design:type', arguments[0], arguments[1]);
-    //     // const component = new Component();
-    //     // console.log(111, component);
-    //     // Object.defineProperty(arguments[0], arguments[1], {
-    //     //     get: () => component, enumerable: true, configurable: true,
-    //     // });
-    // }
 
     public async mounting(app: Application) {
         const paths = await filepath(this.apath);

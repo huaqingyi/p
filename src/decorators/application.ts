@@ -7,6 +7,9 @@ import Router from 'koa-router';
 import { join } from 'path';
 import { Server, connect } from 'net';
 import { existsSync, removeSync } from 'fs-extra';
+import body from 'koa-body';
+import { IBodyContext } from '../context';
+import { map } from 'lodash';
 
 export class Application extends Koa {
     public static pyi: Application;
@@ -64,18 +67,32 @@ export async function bootstrap<P extends PYIApplcation>(target: PYIClass<P> & T
     const apath = config.APP_PATH;
     const loaded = new Loaded(apath);
     await loaded.mounting(pyi);
+    pyi.use(body({ multipart: true }));
+    pyi.use(async (ctx, next) => {
+        map(Object.keys(IBodyContext), key => {
+            ctx[key] = (IBodyContext as any)[key].bind(ctx);
+        });
+        return await next();
+    });
     pyi.use(pyi.router.routes()).use(pyi.router.allowedMethods());
     const ipc = join(config.RUNTIME, config.IPC);
     if (existsSync(ipc)) removeSync(ipc);
     pyi.listen(ipc);
+    let buffer = Buffer.from([]);
     const app = new Server(socket => {
         socket.on('data', data => {
-            // const blen = data.slice(0, 4).readInt32BE();
-            // console.log(blen, data.slice(4, 4 + blen).toString());
-            const net = connect(ipc);
-            net.write(data);
-            net.on('data', socket.write.bind(socket));
-            net.on('end', socket.end.bind(socket));
+            buffer = Buffer.concat([buffer, data]);
+            const blen = buffer.slice(0, 4).readInt32BE();
+            console.log(111, data.toString());
+            if(buffer.length >= 4 + blen){
+                // const data = buffer.slice(4, 4 + blen);
+                const data = buffer.slice(0, 4 + blen);
+                buffer = buffer.slice(4 + blen);
+                const net = connect(ipc);
+                net.write(data);
+                net.on('data', socket.write.bind(socket));
+                net.on('end', socket.end.bind(socket));
+            }
         });
     });
     app.listen(config.PORT);

@@ -1,15 +1,18 @@
 import { env } from '../composition/env';
 import { UserDotENV, UserDotENVKey } from '../composition/env';
 import { PCore } from '../core/pcore';
-import { PYIClass } from '../core/types';
 import { isFunction } from 'lodash';
+
+export type PYIConfiguration<V> = {
+    new(): V & PConfiguration;
+} & typeof PConfiguration;
 
 export interface PYIAppConfiguration {
     port: number;
     host: string;
 }
 
-export function Configuration<P extends PConfiguration>(target: PYIClass<P> & ThisType<P>) {
+export function Configuration<P extends PConfiguration>(target: PYIConfiguration<P> & ThisType<P>) {
     return target;
 }
 
@@ -36,9 +39,29 @@ export function properties() {
 
 export function resource<P extends PCore>(target: P & any, key: string) {
     const Configuration = Reflect.getMetadata('design:type', target, key);
-    target[key] = new Configuration();
+    const { _root } = Configuration;
+    if (_root && isFunction(_root) && _root() === PConfiguration) {
+        target[key] = new Configuration();
+    } else {
+        throw new Error(`resource injection need PConfiguration classess ...`);
+    }
 }
 
 export class PConfiguration extends PCore {
 
+    public static _root() {
+        return PConfiguration;
+    }
+
+    public static _extends() {
+        return PConfiguration.prototype;
+    }
+
+    public get _root() {
+        return PConfiguration._root;
+    }
+
+    public get _extends() {
+        return PConfiguration._extends;
+    }
 }

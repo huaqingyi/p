@@ -95,8 +95,9 @@ export function RequestMapping<P extends PController>(target: P, prototypeKey: s
 export function RequestMapping(config: RequestMappingConfiguration): <P extends PController>(target: P, prototypeKey: string, descr: PropertyDescriptor) => void;
 export function RequestMapping() {
     if (arguments.length === 1) {
+        const [config] = arguments;
         return function (target: PController, key: string, descr: PropertyDescriptor) {
-            routes(target, { path: key, ...arguments[0] }, key, descr.value);
+            routes(target, { path: key, ...config }, key, descr.value);
         }
     }
     routes(arguments[0], { path: arguments[1] }, arguments[1], arguments[2].value);
