@@ -1,5 +1,5 @@
-import { join } from 'path';
 import { GFile, Core, Task, TSC, write, createProject } from 'gyi';
+import { join } from 'path';
 
 @GFile
 export class GulpFile extends Core {

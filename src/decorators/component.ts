@@ -1,52 +1,52 @@
-import { PCore } from '../core/pcore';
+import { isFunction } from 'lodash';
+import { mixin } from '../composition';
+import { PYI, PYIConstructor } from '../core/pyi';
 
-export type PYIComponent<V> = {
-    new(): V & PComponent;
-} & typeof PComponent;
-
-export function Component<P extends PComponent>(target: PYIComponent<P> & ThisType<P>) {
-    return target;
-}
-
-export class PComponent extends PCore {
-
+export class PYIComponent extends PYI {
     public static _root() {
-        return PComponent;
+        return PYIComponent;
     }
 
-    public static _extends() {
-        return PComponent.prototype;
+    public static mixin<T extends Function>(withed: T): PYIComponent & T {
+        return mixin(PYIComponent, withed);
     }
-
-    public get _root() {
-        return PComponent._root;
-    }
-
-    public get _extends() {
-        return PComponent._extends;
-    }
-
 }
 
-export function wired<P extends PComponent>(target: P & any, key: string, config?: any) {
-    const Component = Reflect.getMetadata('design:type', target, key);
-    target[key] = new Component(config);
-    return target[key];
+export interface PropsComponent {
+    path: string | string[];
 }
 
-export function autowired<T = any>(config: T): (target: object, key: string) => void;
-export function autowired(target: object, key: string): void;
+export function Component<VC extends PYIConstructor<any>>(target: VC): VC;
+export function Component<C extends PYIComponent>(options: PropsComponent & ThisType<C>): <VC extends PYIConstructor<PYIComponent>>(target: VC) => VC;
+export function Component() {
+    // eslint-disable-next-line prefer-rest-params
+    const args = arguments;
+    if (args[0]._root && isFunction(args[0]._root) && args[0]._root() === PYIComponent) {
+        const [target] = args;
+        return target;
+    }
+    return <VC extends PYIConstructor<PYIComponent>>(target: VC) => {
+        const [props] = args;
+        console.log(props);
+        return target;
+    };
+}
+
+export interface AutowiredOption {
+    global?: boolean;
+}
+
+export function autowired(options: AutowiredOption): (target: PYI, propertyKey: string | symbol) => void;
+export function autowired(target: PYI, propertyKey: string | symbol): void;
 export function autowired() {
-    if (arguments.length === 1) {
-        const [config] = arguments;
-        return function <P extends PComponent>(target: P & any, key: string) {
-            const Component = Reflect.getMetadata('design:type', target, key);
-            target[key] = new Component(config);
-            return target[key];
-        }
+    // eslint-disable-next-line prefer-rest-params
+    const args = arguments;
+    if (args[0]._ && isFunction(args[0]._) && args[0]._() === PYI) {
+        const [target, propertyKey] = args;
+        console.log(target, propertyKey);
     }
-    const [target, key] = arguments;
-    const Component = Reflect.getMetadata('design:type', target, key);
-    target[key] = new Component();
-    return target[key];
+    return (target: PYI, propertyKey: string | symbol) => {
+        const [props] = args;
+        console.log(props, target, propertyKey);
+    };
 }
