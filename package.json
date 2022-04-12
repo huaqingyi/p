@@ -40,6 +40,7 @@
     "typescript-require": "^0.3.0"
   },
   "dependencies": {
+    "chokidar": "^3.5.3",
     "koa": "^2.13.4",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.1.13",

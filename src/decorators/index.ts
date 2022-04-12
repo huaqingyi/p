@@ -1,4 +1,3 @@
-export * from '../application';
 export * from './component';
 export * from './configuration';
 export * from './controller';

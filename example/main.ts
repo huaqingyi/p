@@ -1,7 +1,8 @@
-import { PYIFactory } from '../src';
+import { PFactory } from '../src';
 
 async function bootstrap() {
-    PYIFactory.create({});
+    const app = PFactory.create({});
+    app.listen();
 }
 
 bootstrap();

@@ -1,5 +1,6 @@
-import { Next, ParameterizedContext } from 'koa';
+import { Middleware } from 'koa';
 import { ListenOptions, Socket } from 'net';
+import { BaseData, Factory, PYIFactoryTCPOptions } from './factory';
 
 export type TCPDefaultStateExtends = any;
 export interface TCPDefaultState extends TCPDefaultStateExtends {
@@ -11,39 +12,14 @@ export interface TCPDefaultContext extends TCPDefaultContextExtends {
     [key: string]: any;
 }
 
-export interface TCPBaseData {
-    [key: string]: any;
-}
-export type PMiddleware<T> = (context: T, next: Next) => any;
-export type Middleware<StateT = TCPDefaultState, ContextT = TCPDefaultContext, ResponseBodyT = any> = PMiddleware<ParameterizedContext<StateT, ContextT, ResponseBodyT>>;
-
-export interface Factory<StateT = TCPDefaultState, ContextT = TCPDefaultContext> {
-    context: any;
-    request: any;
-    response: any;
-    middleware: Middleware<any, any>[];
-
-    use<NewStateT = {}, NewContextT = {}>(middleware: Middleware<StateT & NewStateT, ContextT & NewContextT>): Factory<StateT & NewStateT, ContextT & NewContextT>;
-
-    listen(port?: number, hostname?: string, backlog?: number, listeningListener?: () => void): Factory;
-    listen(port: number, hostname?: string, listeningListener?: () => void): Factory;
-    listen(port: number, backlog?: number, listeningListener?: () => void): Factory;
-    listen(port: number, listeningListener?: () => void): Factory;
-    listen(path: string, backlog?: number, listeningListener?: () => void): Factory;
-    listen(path: string, listeningListener?: () => void): Factory;
-    listen(options: ListenOptions, listeningListener?: () => void): Factory;
-    listen(handle: any, backlog?: number, listeningListener?: () => void): Factory;
-    listen(handle: any, listeningListener?: () => void): Factory;
-}
-
 export interface TCPRequest {
     cmd: string;
-    data: TCPBaseData;
+    data: BaseData;
 }
 
 export interface TCPResponse {
     socket: Socket;
-    data: TCPBaseData;
+    data: BaseData;
 }
 
 export interface TCPBaseContext extends TCPRequest, TCPResponse {
@@ -53,13 +29,13 @@ export interface TCPBaseContext extends TCPRequest, TCPResponse {
     onerror(err: Error): void;
 }
 
-export abstract class PFactory<StateT = TCPDefaultState, ContextT = TCPDefaultContext> implements Factory<StateT, ContextT> {
+export class TCPFactory<StateT = TCPDefaultState, ContextT = TCPDefaultContext> implements Factory<StateT, ContextT> {
     public context!: TCPBaseContext & ContextT;
-    public request!: TCPRequest & TCPBaseData;
-    public response!: TCPResponse & TCPBaseData;
+    public request!: TCPRequest & BaseData;
+    public response!: TCPResponse & BaseData;
     public middleware: Middleware<StateT, ContextT>[];
 
-    constructor() {
+    constructor(public config: PYIFactoryTCPOptions) {
         this.middleware = [];
     }
 
