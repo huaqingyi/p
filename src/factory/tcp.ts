@@ -1,6 +1,8 @@
 import { Middleware } from 'koa';
 import { ListenOptions, Socket } from 'net';
-import { BaseData, Factory, PYIFactoryTCPOptions } from './factory';
+import { config } from '../composition/configuration';
+import { PYIAPPConfiguration } from '../decorators';
+import { BaseData, Factory } from './factory';
 
 export type TCPDefaultStateExtends = any;
 export interface TCPDefaultState extends TCPDefaultStateExtends {
@@ -35,7 +37,11 @@ export class TCPFactory<StateT = TCPDefaultState, ContextT = TCPDefaultContext> 
     public response!: TCPResponse & BaseData;
     public middleware: Middleware<StateT, ContextT>[];
 
-    constructor(public config: PYIFactoryTCPOptions) {
+    public get config() {
+        return config;
+    }
+
+    constructor() {
         this.middleware = [];
     }
 
@@ -54,6 +60,7 @@ export class TCPFactory<StateT = TCPDefaultState, ContextT = TCPDefaultContext> 
     public listen(handle: any, backlog?: number, listeningListener?: () => void): this;
     public listen(handle: any, listeningListener?: () => void): this;
     public listen() {
+        console.log(321321, this.config(PYIAPPConfiguration));
         return this;
     }
 }

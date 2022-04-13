@@ -7,7 +7,7 @@ export class PYIComponent extends PYI {
         return PYIComponent;
     }
 
-    public static mixin<T extends Function>(withed: T): PYIComponent & T {
+    public static mixin<T extends Function>(withed: T): PYIConstructor<PYIComponent> & T {
         return mixin(PYIComponent, withed);
     }
 }

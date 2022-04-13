@@ -1,5 +1,7 @@
+import { config } from '../composition/configuration';
+
 export declare interface PYIConstructor<V extends PYI> {
-    new(...args: any[]): V;
+    new (...args: any[]): V;
 }
 
 export type PYIPropsType = string | number | boolean | object | Function | {};
@@ -9,15 +11,15 @@ export interface PYIProps {
 }
 
 export class PYI<Props = PYIProps> {
-    public static _(): PYI {
+    public static _(): any {
         return PYI;
     }
 
-    public static _root(): PYI {
+    public static _root(): any {
         return PYI;
     }
 
-    public static _extends(): PYI {
+    public static _extends(): any {
         return this.prototype;
     }
 
@@ -37,6 +39,10 @@ export class PYI<Props = PYIProps> {
 
     public get _filepath(): string {
         return Object.assign(this.constructor)._filepath;
+    }
+
+    public get config() {
+        return config;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

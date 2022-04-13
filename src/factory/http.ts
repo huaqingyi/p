@@ -1,6 +1,8 @@
 import { DefaultState, DefaultContext, BaseContext, BaseRequest, BaseResponse } from 'koa';
 import { ListenOptions } from 'net';
-import { BaseData, Factory, Middleware, PYIFactoryHTTPOptions } from './factory';
+import { config } from '../composition/configuration';
+import { PYIAPPConfiguration } from '../decorators';
+import { BaseData, Factory, Middleware } from './factory';
 
 export class HTTPFactory<StateT = DefaultState, ContextT = DefaultContext> implements Factory<StateT, ContextT> {
     public context!: BaseContext & ContextT;
@@ -8,7 +10,11 @@ export class HTTPFactory<StateT = DefaultState, ContextT = DefaultContext> imple
     public response!: BaseResponse & BaseData;
     public middleware: Middleware<StateT, ContextT>[];
 
-    constructor(public config: PYIFactoryHTTPOptions) {
+    public get config() {
+        return config;
+    }
+
+    constructor() {
         this.middleware = [];
     }
 
@@ -27,6 +33,7 @@ export class HTTPFactory<StateT = DefaultState, ContextT = DefaultContext> imple
     public listen(handle: any, backlog?: number, listeningListener?: () => void): this;
     public listen(handle: any, listeningListener?: () => void): this;
     public listen() {
+        console.log(123123, this.config(PYIAPPConfiguration));
         return this;
     }
 }

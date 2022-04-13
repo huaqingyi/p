@@ -9,7 +9,7 @@ export class PYIConfiguration extends PYI {
 
 export class PYIAPPConfiguration extends PYI {
     public static _root() {
-        return PYIConfiguration;
+        return PYIAPPConfiguration;
     }
 }
 
@@ -20,8 +20,9 @@ export interface PropsConfiguration {
 export function Configuration<VC extends PYIConstructor<PYIConfiguration>>(target: VC): VC;
 export function Configuration<C extends PYIConfiguration>(options: PropsConfiguration & ThisType<C>): <VC extends PYIConstructor<PYIConfiguration>>(target: VC) => VC;
 export function Configuration() {
+    // eslint-disable-next-line prefer-rest-params
     const args = arguments;
-    if (args[0]._root && isFunction(args[0]._root) && args[0]._root() === PYIConfiguration) {
+    if (args[0]._root && isFunction(args[0]._root) && [PYIConfiguration, PYIAPPConfiguration].includes(args[0]._root())) {
         const [target] = args;
         return target;
     }

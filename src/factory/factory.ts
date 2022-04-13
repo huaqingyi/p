@@ -1,7 +1,11 @@
 import { Next, ParameterizedContext } from 'koa';
+import { map, merge } from 'lodash';
 import { ListenOptions } from 'net';
+import { CompositionConfiguration } from '../composition/configuration';
+import { PYIConstructor } from '../core/pyi';
 import { APPConfiguration } from '../core/configuration';
 import { Loaded } from '../core/loaded';
+import { PYIAPPConfiguration } from '../decorators/configuration';
 import { HTTPFactory } from './http';
 import { TCPFactory } from './tcp';
 
@@ -62,20 +66,26 @@ export class PFactory {
         return PFactory;
     }
 
-    public static create(options: PYIFactoryHTTPOptions): HTTPFactory;
-    public static create(options: PYIFactoryTCPOptions): TCPFactory;
-    public static create(options: PYIFactoryHTTPOptions | PYIFactoryTCPOptions) {
-        if (options.transport !== Transport.TCP && (!options.transport)) {
+    public static async create(options: PYIFactoryHTTPOptions): Promise<HTTPFactory>;
+    public static async create(options: PYIFactoryTCPOptions): Promise<TCPFactory>;
+    public static async create(options: PYIFactoryHTTPOptions | PYIFactoryTCPOptions) {
+        if (options.transport !== Transport.TCP && !options.transport) {
             options.transport = Transport.HTTP;
         }
 
         const config = new APPConfiguration();
-        const loaded = new Loaded(config.APP_PATH);
-        loaded.build();
+        const loaded = new Loaded(config.app);
+        await loaded.build();
+        const configs: PYIConstructor<PYIAPPConfiguration>[] = loaded.mcompositions.get(PYIAPPConfiguration) || [];
+        config._config = merge(config._config, ...map(configs, C => new C()));
+        config.formatted();
+        CompositionConfiguration.create(config._config, loaded.mcompositions);
 
         switch (options.transport) {
-            case Transport.HTTP: return new HTTPFactory(options);
-            case Transport.TCP: return new TCPFactory(options);
+            // eslint-disable-next-line prettier/prettier
+            case Transport.HTTP: return new HTTPFactory();
+            // eslint-disable-next-line prettier/prettier
+            case Transport.TCP: return new TCPFactory();
         }
     }
 }

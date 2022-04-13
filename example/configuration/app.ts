@@ -1,9 +1,7 @@
 import { Configuration, PYIAPPConfiguration, PYIFactoryOptions } from '../../src';
-import { join } from 'path';
 
 @Configuration
 export class ApplicationConfiguration extends PYIAPPConfiguration implements PYIFactoryOptions {
-
     public host: string;
     public port: number;
     public retryAttempts: number;
