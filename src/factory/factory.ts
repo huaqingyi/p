@@ -8,12 +8,37 @@ import { Loaded } from '../core/loaded';
 import { PYIAPPConfiguration } from '../decorators/configuration';
 import { HTTPFactory } from './http';
 import { TCPFactory } from './tcp';
+import { Socket } from 'dgram';
 
 export interface BaseData {
     [key: string]: any;
 }
 export type PMiddleware<T> = (context: T, next: Next) => any;
 export type Middleware<State, Context, Response = any> = PMiddleware<ParameterizedContext<State, Context, Response>>;
+
+export interface TCPRequest {
+    cmd: string;
+    data: BaseData;
+}
+
+export interface TCPResponse {
+    socket: Socket;
+    data: BaseData;
+}
+
+export type TCPDefaultStateExtends = any;
+export interface TCPDefaultState extends TCPDefaultStateExtends {
+    [key: string]: any;
+}
+
+export type TCPDefaultContextExtends = {};
+export interface TCPDefaultContext extends TCPDefaultContextExtends {
+    [key: string]: any;
+}
+export type TParameterizedContext<StateT = TCPDefaultState, ContextT = TCPDefaultContext> = {
+    state: StateT;
+} & ContextT & { request: TCPRequest; response: TCPResponse };
+export type TMiddleware<State, Context> = PMiddleware<TParameterizedContext<State, Context>>;
 
 export interface Factory<State = any, Context = any> {
     context: any;

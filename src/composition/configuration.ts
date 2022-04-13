@@ -15,7 +15,7 @@ export class CompositionConfiguration {
         return CompositionConfiguration.instance;
     }
 
-    public static config(key?: MPYIConfiguartionKeyed | PYIConstructor<PYI>) {
+    public static config<T = any>(key?: MPYIConfiguartionKeyed | PYIConstructor<PYI>): any & T {
         if (key && isString(key)) return CompositionConfiguration._config[key];
         if (key && (key as any)._root()) {
             const P = key as PYIConstructor<PYI>;

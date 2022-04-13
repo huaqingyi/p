@@ -1,28 +1,10 @@
-import { Middleware } from 'koa';
-import { ListenOptions, Socket } from 'net';
+import { Middleware, TCPDefaultContext, TCPDefaultState, TCPRequest, TCPResponse, TMiddleware } from './factory';
+import { ListenOptions } from 'net';
+import { TCPApplication } from '../app/tcp';
 import { config } from '../composition/configuration';
-import { PYIAPPConfiguration } from '../decorators';
+import { PYIConstructor } from '../core/pyi';
+import { PTransform } from '../transform';
 import { BaseData, Factory } from './factory';
-
-export type TCPDefaultStateExtends = any;
-export interface TCPDefaultState extends TCPDefaultStateExtends {
-    [key: string]: any;
-}
-
-export type TCPDefaultContextExtends = {};
-export interface TCPDefaultContext extends TCPDefaultContextExtends {
-    [key: string]: any;
-}
-
-export interface TCPRequest {
-    cmd: string;
-    data: BaseData;
-}
-
-export interface TCPResponse {
-    socket: Socket;
-    data: BaseData;
-}
 
 export interface TCPBaseContext extends TCPRequest, TCPResponse {
     throw(message: string, code?: number, properties?: {}): never;
@@ -36,6 +18,7 @@ export class TCPFactory<StateT = TCPDefaultState, ContextT = TCPDefaultContext> 
     public request!: TCPRequest & BaseData;
     public response!: TCPResponse & BaseData;
     public middleware: Middleware<StateT, ContextT>[];
+    public app: TCPApplication<any, any>;
 
     public get config() {
         return config;
@@ -43,10 +26,13 @@ export class TCPFactory<StateT = TCPDefaultState, ContextT = TCPDefaultContext> 
 
     constructor() {
         this.middleware = [];
+        this.app = new TCPApplication();
     }
 
-    public use<NewStateT = {}, NewContextT = {}>(middleware: Middleware<StateT & NewStateT, ContextT & NewContextT>) {
-        console.log(middleware);
+    public use<NewStateT = {}, NewContextT = {}>(middleware: TMiddleware<StateT & NewStateT, ContextT & NewContextT>): this;
+    public use<P extends PYIConstructor<PTransform>>(middleware: P): this;
+    public use(middleware: any) {
+        this.app.use(middleware);
         return this;
     }
 
@@ -60,7 +46,8 @@ export class TCPFactory<StateT = TCPDefaultState, ContextT = TCPDefaultContext> 
     public listen(handle: any, backlog?: number, listeningListener?: () => void): this;
     public listen(handle: any, listeningListener?: () => void): this;
     public listen() {
-        console.log(321321, this.config(PYIAPPConfiguration));
+        /* eslint-disable prefer-rest-params */
+        this.app.listen(...arguments);
         return this;
     }
 }
